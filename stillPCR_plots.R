@@ -10,6 +10,8 @@ filter_thresh <- 1000
 require(tidyverse)
 require(ggplot2)
 require(cowplot)
+require(plotly)
+require(htmlwidgets)
 dat <- read_tsv(f_in, col_names = F)
 
 
@@ -60,6 +62,8 @@ dpth_plt <- read_tsv(args[2], col_names = F) %>%
   layout(xaxis = list(title = "Postion"),
          yaxis = list(title = "Depth"),
          title = name)
+try({
+  saveWidget(as_widget(dpth_plt), paste0(name, "_cov.html"), selfcontained = T)
+})
 
-htmlwidgets::saveWidget(as_widget(dpth_plt), paste0(name, "_cov.html"))
 

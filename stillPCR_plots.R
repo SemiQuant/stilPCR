@@ -54,3 +54,12 @@ for (i in 1:length(genes)){
 pdf(paste0(name, ".pdf"))
 ggpubr::ggarrange(plotlist = plots, labels = genes, common.legend = T, legend = "bottom")
 dev.off()
+
+dpth_plt <- read_tsv(args[2], col_names = F) %>% 
+  plot_ly(x = ~X2, y=~X3, color = ~X1) %>% 
+  layout(xaxis = list(title = "Postion"),
+         yaxis = list(title = "Depth"),
+         title = name)
+
+htmlwidgets::saveWidget(as_widget(dpth_plt), paste0(name, "_cov.html"))
+

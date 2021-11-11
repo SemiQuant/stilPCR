@@ -20,15 +20,12 @@ To add, variant calling and summary (will be using the DP and AD, may also chang
 
 [bedtools](https://bedtools.readthedocs.io/en/latest/content/installation.html)
 
+
 R packages
-*vcfR
 
-*tidyverse
-
-*ggplot2
-
-*cowplot
-
-*plotly
-
-*htmlwidgets
+- vcfR
+- tidyverse
+- ggplot2
+- cowplot
+- plotly
+- htmlwidgets

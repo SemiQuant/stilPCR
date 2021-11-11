@@ -1,22 +1,70 @@
 require(vcfR)
+require(tidyverse)
 args = commandArgs(trailingOnly=TRUE)
 vcf_file <- args[1]
 dna_file <- args[2]
 
+vcf_file <- "/Users/SemiQuant/Downloads/delete_now/A/stilPCR13-M1-1.vcf"
+dna_file <- "/Users/SemiQuant/Bioinformatics/Projects/stilPCR/refs/m1.fasta"
+
+nme <- gsub(".vcf", "", basename(vcf_file))
+
 vcf <- read.vcfR(vcf_file, verbose = F)
 dna <- ape::read.dna(dna_file, format = "fasta")
 chrom <- create.chromR(name='Supercontig', vcf=vcf, seq=dna)
+
+
+pdf(paste0(nme, "_info1.pdf"))
 plot(chrom)
+dev.off()
+
+pdf(paste0(nme, "_info2.pdf"))
 chromoqc(chrom, dp.alpha=20)
+dev.off()
+
 
 dp <- extract.gt(chrom, element="AD", as.numeric=T)
 rownames(dp) <- 1:nrow(dp)
 is.na(dp[na.omit(dp == 0)]) <- TRUE
-heatmap.bp(dp)
+
+pdf(paste0(nme, "_info3_ADs.pdf"))
+heatmap.bp(dp) # this is really for many files and DP
+dev.off()
 
 
 vcf_t <- vcfR2tidy(vcf, single_frame = T)$dat
 # vcf_t$meta
+
+
+if (max(str_count(vcf_t$ALT, ","), na.rm = T) > 2)
+  print("cant handel this!!")
+
+vcf_t <- vcf_t %>% 
+  select("CHROM", "POS", "REF", "ALT", "QUAL", "INDEL", "DP", "AC", "AN", "Indiv", 
+         "gt_AD", "gt_ADF", "gt_ADR", "gt_GT", "gt_GT_alleles") %>% 
+  separate(gt_AD, c("AD_REF", "AD1", "AD2", "AD3")) %>% 
+  separate(ALT, c("ALT1", "ALT2", "ALT3")) %>% 
+  replace_na(list(AD1 = 0, AD2 = 0, AD3 = 0)) %>% 
+  type_convert() %>% 
+  mutate(DP = AD_REF + AD1 + AD2 + AD3) %>% # convert DP to only HQ base count
+  mutate(ADrefp = round(AD_REF/DP*100, 2),
+         AD1p = round(AD1/DP*100, 2),
+         AD2p = round(AD2/DP*100, 2),
+         AD3p = round(AD3/DP*100, 2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # tibble::tribble(
 #        ~ID,     ~Type,                                                                                   ~Description,
 #    "INDEL",    "Flag",                                                      "Indicates that the variant is an INDEL.",
@@ -40,8 +88,3 @@ vcf_t <- vcfR2tidy(vcf, single_frame = T)$dat
 #   "gt_ADR", "Integer",                                    "Allelic depths on the reverse strand (high-quality bases)",
 #    "gt_GT",  "String",                                                                                     "Genotype"
 #   )
-
-
-
-
-

@@ -1,7 +1,7 @@
 # stilPCR
 
 In DEV.
-Analysis of Illumina amplicon sequencing. THe program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and call variants.
+Analysis of Illumina amplicon sequencing. The program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and call variants.
 
 ## process.sh
 ### Process fastq and create plots/ call variants

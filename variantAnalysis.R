@@ -36,6 +36,9 @@ vcf_t <- vcfR2tidy(vcf, single_frame = T)$dat
 # vcf_t$meta
 
 
+vcf_t <- vcf_t %>% 
+  mutate(ALT = ifelse(INDEL, "INDEL", ALT))
+
 if (max(str_count(vcf_t$ALT, ","), na.rm = T) > 2)
   print("cant handel this!!")
 
@@ -71,14 +74,22 @@ vcf_t <- vcf_t %>%
                                       AD3p
                                ))))
 
+varplots <- list()
+count <- 1
+for (chr in unique(vcf_t$CHROM)){
+  varplots[[count]] <-  vcf_t %>% 
+    filter(CHROM == chr) %>% 
+    plot_ly(x = ~POS, y = ~Depth, type = 'bar', 
+            color = ~Call) %>%
+    layout(barmode = 'stack',
+           yaxis = list(title = "Percentage"),
+           xaxis = list(title = paste("Position in", chr)))
+  
+  count <- count + 1
+}
 
-
-var_plot <- vcf_t %>% 
-  filter(CHROM == "Rv0678") %>% 
-  plot_ly(x = ~POS, y = ~Depth, type = 'bar', 
-          color = ~Call) %>%
-  layout( barmode = 'stack')
-
+var_plot <- subplot(varplots,
+                    shareY = T, titleX = T)
 
 
 try({

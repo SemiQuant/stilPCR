@@ -1,11 +1,11 @@
 require(vcfR)
 require(tidyverse)
+require(plotly)
+require(plotly)
+require(htmlwidgets)
 args = commandArgs(trailingOnly=TRUE)
 vcf_file <- args[1]
 dna_file <- args[2]
-
-vcf_file <- "/Users/SemiQuant/Downloads/delete_now/A/stilPCR13-M1-1.vcf"
-dna_file <- "/Users/SemiQuant/Bioinformatics/Projects/stilPCR/refs/m1.fasta"
 
 nme <- gsub(".vcf", "", basename(vcf_file))
 
@@ -55,11 +55,35 @@ vcf_t <- vcf_t %>%
 
 
 
+# this is a bullshit way to do things! Fix it.
+
+vcf_t <- vcf_t %>%
+  select("Indiv", "CHROM", "POS", "ADrefp", "AD1p", "AD2p", "AD3p", 
+         "REF", "ALT1", "ALT2", "ALT3") %>% 
+  pivot_longer(cols = !Indiv:AD3p, 
+               names_to = "Depth", 
+               values_to = "Call") %>% 
+  filter(!is.na(Call)) %>% 
+  mutate(Call = ifelse(Depth == "REF", "REF", Call)) %>% 
+  mutate(Depth = ifelse(Depth == "REF", ADrefp,
+                        ifelse(Depth == "ALT1", AD1p,
+                               ifelse(Depth == "ALT2", AD2p,
+                                      AD3p
+                               ))))
 
 
 
+var_plot <- vcf_t %>% 
+  filter(CHROM == "Rv0678") %>% 
+  plot_ly(x = ~POS, y = ~Depth, type = 'bar', 
+          color = ~Call) %>%
+  layout( barmode = 'stack')
 
 
+
+try({
+  saveWidget(as_widget(var_plot), paste0(nme, "_varPlot.html"), selfcontained = T)
+})
 
 
 

@@ -1,7 +1,7 @@
 sample="$1"
 ref="$2"
 primers="$3" # requires samtools >=1.4
-threads=1
+threads=${4:-1}
 R1="${sample}_R1_001.fastq.gz"
 R2="${sample}_R2_001.fastq.gz"
 
@@ -39,6 +39,12 @@ bcftools mpileup --fasta-ref "$ref" --max-depth 999999999 \
   --excl-flags "UNMAP,SECONDARY,QCFAIL" \
   --max-idepth 9999999999 \
   -Ou \
+  --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR \
   "$bam" |
-  bcftools call -m --keep-masked-ref --threads $threads > "${sample}.vcf"
+  bcftools call -m --keep-masked-ref --threads $threads \
+  --novel-rate 1e-10 \
+  --pval-threshold 0 \
+  --prior 1.1e-10 \
+  --keep-alts > "${sample}.vcf"
+  
   

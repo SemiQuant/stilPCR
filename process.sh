@@ -31,3 +31,14 @@ Rscript "stillPCR_plots.R" "${PWD}/${sample}.counts.tsv" "${PWD}/${sample}.depth
 # samtools ampliconstats -@ $threads "$primers" "${sample}_clipped.bam" -o "${sample}_astats.txt"
 # plot-ampliconstats -size 1200,900 mydata "${sample}_astats.txt"
 
+
+bcftools mpileup --fasta-ref "$ref" --max-depth 999999999 \
+  --ignore-RG \
+  --min-BQ 30 \
+  --threads $threads \
+  --excl-flags "UNMAP,SECONDARY,QCFAIL" \
+  --max-idepth 9999999999 \
+  -Ou \
+  "$bam" |
+  bcftools call -m --keep-masked-ref --threads $threads > "${sample}.vcf"
+  

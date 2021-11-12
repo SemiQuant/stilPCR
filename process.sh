@@ -43,8 +43,9 @@ bcftools mpileup --fasta-ref "$ref" --max-depth 999999999 \
   "$bam" |
   bcftools call -m --keep-masked-ref --threads $threads \
   --novel-rate 1e-10 \
-  --pval-threshold 0 \
+  --pval-threshold 1 \
   --prior 1.1e-10 \
   --keep-alts > "${sample}.vcf"
   
   
+Rscript "variantAnalysis.R" "${PWD}/${sample}.vcf" "$ref"

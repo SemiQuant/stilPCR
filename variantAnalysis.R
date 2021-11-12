@@ -57,7 +57,6 @@ vcf_t <- vcf_t %>%
 
 
 
-
 # this is a bullshit way to do things! Fix it.
 
 vcf_t <- vcf_t %>%

@@ -42,9 +42,9 @@ bcftools mpileup --fasta-ref "$ref" --max-depth 999999999 \
   --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR \
   "$bam" |
   bcftools call -m --keep-masked-ref --threads $threads \
-  --novel-rate 1e-10 \
-  --pval-threshold 1 \
-  --prior 1.1e-10 \
+  --novel-rate 1e-100 \
+  --pval-threshold 1.0 \
+  --prior 0 \
   --keep-alts > "${sample}.vcf"
   
   

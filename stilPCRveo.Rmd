@@ -1,0 +1,708 @@
+---
+title: "stilPCRveo"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill #scroll
+    # storyboard: TRUE
+    logo: sq.png
+    # source_code: embed
+    # theme: bootstrap
+    favicon: favicon.ico
+    navbar:
+      - { title: "SemiQuant", href: "http://www.SemiQuant.com", align: right }
+      # - { title: "Cite", align: right, icon: fa-file-signature }
+    self_contained: TRUE
+    highlight: zenburn
+    css: Dash_v1.2.css
+    font-family: 'Helvetica, Arial, sans-serif;'
+bootstrap_compatible: TRUE
+# runtime: shiny
+# params:
+#   pandoc_args: highlight="monokai" # why not work?!!!
+---
+
+
+<script>
+$('.navbar-logo').wrap('<a href="http://www.SemiQuant.com">');
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NOTES
+===================================== 
+
+This will be an output option when running the analysis.
+    repurposing some old code, so none of this works yet, just pasted bits here for dev.
+I think I'll make this accept a multisample VCF or a table with the DP/AD, and a mutation catalog
+Most plots are interactive, so click around and see what you think of it.
+
+**Things to Add**
+
+Per sample full coverage plots for the single sample view (those plots of percent vs position)
+Some coverage stats (aligned reads, average depth per amplicon, number of variants)
+Tab with a table (or plot) of the mutations considered in the analysis
+
+**Things to Edit**
+
+* All graph colors will match
+* I cant get filtering using a table working across all plots unless I use a server (so either host it or run on individual pc through R)
+* Update the hover text. For example, the heatmap will have the percentage call, the number of reads, the AA change and the nt change etc.
+
+**Data Table**  
+
+* Text size should be reduced (the css isn't listening, everything is a mess)
+
+**Single Sample Plots**
+
+* There is an issue with the initialization (the first plot shown before selecting is a mash of all the data, I'll have to see how to fix this)
+
+** Cite and Links **
+* I cant get a modal to popup only for Cite when in top right, it pops up for all navbar items so I did it this way for now
+  + Anyone good with JS?
+
+
+
+
+```{r setup, echo=F}
+require(flexdashboard)
+require(tidyverse)
+require(plotly)
+require(crosstalk)
+require(flexdashboard)
+require(DT)
+require(dplyr)
+require(heatmaply)
+require(echarts4r)
+require(shades)
+
+require(bsplus)
+
+
+
+dat <- tibble::tribble(
+  ~SampleID,    ~Gene, ~Drug,    ~Mutation, ~Percentage, ~Call,
+  "S1",   "rpoB", "RIF",         "WT",         100,   "S",
+  "S2",   "rpoB", "RIF",          "A",          50,  "HR",
+  "S2",   "rpoB", "RIF",         "WT",          50,  "HR",
+  "S3",   "rpoB", "RIF", "WT",           100,   "S",
+  "S4",   "rpoB", "RIF",         "WT",         100,   "S",
+  "S5",   "rpoB", "RIF",          "A",          50,  "HR",
+  "S5",   "rpoB", "RIF",         "WT",          50,  "HR",
+  "S6",   "rpoB", "RIF", "A",           100,   "R",
+  "S1",   "katG", "INH",         "WT",         100,   "S",
+  "S2",   "katG", "INH",          "G",           5,  "HR",
+  "S2",   "katG", "INH",         "WT",          95,  "HR",
+  "S3",   "katG", "INH",         "WT",         100,   "S",
+  "S4",   "katG", "INH",         "WT",         100,   "S",
+  "S5",   "katG", "INH",          "G",           5,  "HR",
+  "S5",   "katG", "INH",         "WT",          95,  "HR",
+  "S6",   "katG", "INH",         "WT",         100,   "S",
+  "S1",   "inhA", "INH",         "WT",         100,   "S",
+  "S2",   "inhA", "INH",          "G",          50,  "HR",
+  "S2",   "inhA", "INH",         "WT",          50,  "HR",
+  "S3",   "inhA", "INH", "NoCoverage",           0,    NA,
+  "S4",   "inhA", "INH",         "WT",         100,   "S",
+  "S5",   "inhA", "INH",          "G",          50,  "HR",
+  "S5",   "inhA", "INH",         "WT",          50,  "HR",
+  "S6",   "inhA", "INH", "WT",           100,   "S",
+  "S1",   "atpE", "BDQ",         "WT",         100,   "S",
+  "S2",   "atpE", "BDQ",          "A",          50,  "HR",
+  "S2",   "atpE", "BDQ",         "WT",          50,  "HR",
+  "S3",   "atpE", "BDQ", "NoCoverage",           0,    NA,
+  "S4",   "atpE", "BDQ",         "WT",         100,   "S",
+  "S5",   "atpE", "BDQ",          "A",          50,  "HR",
+  "S5",   "atpE", "BDQ",         "WT",          50,  "HR",
+  "S6",   "atpE", "BDQ", "A",           100,   "R",
+  "S1",   "pepQ", "BDQ",         "WT",         100,   "S",
+  "S2",   "pepQ", "BDQ",          "G",           5,  "HR",
+  "S2",   "pepQ", "BDQ",         "WT",          95,  "HR",
+  "S3",   "pepQ", "BDQ",         "WT",         100,   "S",
+  "S4",   "pepQ", "BDQ",         "WT",         100,   "S",
+  "S5",   "pepQ", "BDQ",          "G",           5,  "HR",
+  "S5",   "pepQ", "BDQ",         "WT",          95,  "HR",
+  "S6",   "pepQ", "BDQ",         "WT",         100,   "S",
+  "S1", "Rv0678", "BDQ",         "WT",         100,   "S",
+  "S2", "Rv0678", "BDQ",          "G",          50,  "HR",
+  "S2", "Rv0678", "BDQ",         "WT",          50,  "HR",
+  "S3", "Rv0678", "BDQ", "NoCoverage",           0,    NA,
+  "S4", "Rv0678", "BDQ",         "WT",         100,   "S",
+  "S5", "Rv0678", "BDQ",          "G",          50,  "HR",
+  "S5", "Rv0678", "BDQ",         "WT",          50,  "HR",
+  "S6", "Rv0678", "BDQ",  "G",          50,  "R",
+  "S1", "Rv0678", "CLF",         "WT",         100,   "S",
+  "S2", "Rv0678", "CLF",          "G",          50,  "HR",
+  "S2", "Rv0678", "CLF",         "WT",          50,  "HR",
+  "S3", "Rv0678", "CLF", "G",          50,  "R",
+  "S4", "Rv0678", "CLF",         "WT",         100,   "S",
+  "S5", "Rv0678", "CLF",          "G",          50,  "HR",
+  "S5", "Rv0678", "CLF",         "WT",          50,  "HR",
+  "S6", "Rv0678", "CLF", "NoCoverage",           0,    NA
+)
+
+```
+
+
+MultiSample
+===================================== 
+
+<!-- Column {.sidebar data-width=250} -->
+Column {data-width=250}
+-----------------------------------------------------------------------
+
+### Samples
+
+```{r}
+valueBox(length(unique(dat$SampleID)), icon = "fa-vials")
+```
+
+### Drug Targets
+
+```{r}
+valueBox(length(unique(dat$Drug)), icon = "fa-pills")
+```
+
+
+### Missingness
+
+```{r}
+valueBox(sum(!complete.cases(dat)), icon = "fa-cookie-bite", color = "orange")
+```
+
+### 
+
+```{r echo=FALSE}
+dat$Mutation <- as.factor(dat$Mutation)
+dat <- dat %>% group_by(Gene)
+dat$Call <- as.factor(dat$Call)
+dat$Mutation <- as.factor(dat$Mutation)
+levels(dat$Call) <- c("S", "R", "HR")
+levels(dat$Mutation) <- c("WT", "A", "C", "G", "T", "NoCoverage")
+
+dat$rand <- 5
+dat$color <- ifelse(dat$Call == "S", "green",
+                         ifelse(dat$Call == "R", "red",
+                                "blue"))
+
+
+cols_pltly <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b")
+
+dat$Dgene <- paste(dat$Drug, "-", dat$Gene)
+
+
+sd1 <- SharedData$new(dat, group = "A")
+sd2 <- SharedData$new(dat[c(1:6)], group = "A")
+
+
+
+datatable(sd2, style="bootstrap", class="compact", width="100%",
+          options=list(dom='rpt', #dom='p', #
+                       pageLength = 10, #scrollY = 200,
+                       #scrollX = TRUE,
+                       fixedColumns = list(leftColumns = 1)
+                       # lengthMenu = c(5, 10, 15, 20)
+                       ), rownames = F, filter = list(position = 'top', clear = F),
+          editable = T, selection = list(mode = "multiple")) #
+# formatStyle(columns = colnames(.), fontSize = '500%')
+
+# p1 <- sd1 %>% 
+#   # arrange(PercentageGenomeCalled) %>% 
+#   plot_ly(x = ~Sample, y = ~PercentageGenomeCalled, type = "bar") %>%  #, color = ~)
+#   layout(xaxis = list(categoryarray = ~names, categoryorder = "array")) %>% 
+#   layout(autosize = T, margin = "10%")
+
+
+# calculate the padding here based mainly off the xais albles max(ncahr())
+
+m <- list(
+  l = 10,
+  r = 10,
+  b = 150,
+  t = 10,
+  pad = 4
+)
+
+
+
+plot_many <- . %>% 
+  plot_ly(x = ~SampleID, y = ~Percentage, type = 'bar', color = ~Mutation, legendgroup = ~Mutation, name = ~paste(Drug, Gene, Mutation),
+          text = ~Percentage, textposition = 'auto') %>% #marker=list(color=~Mutation)
+  # add_annotations(
+  #   text = ~unique(Gene),
+  #   x = 0.5,
+  #   y = 1.05,
+  #   yref = "paper",
+  #   xref = "paper",
+  #   xanchor = "middle",
+  #   yanchor = "top",
+  #   showarrow = FALSE,
+  #   font = list(size = 15)
+  # ) %>% 
+  layout(barmode = "stack") %>% #, autosize = T, margin = m) 
+  # layout(legend = list(orientation = 'h')) %>% 
+  layout(
+  plot_bgcolor="#3A3A39",
+  paper_bgcolor ="#3A3A39",
+  xaxis = list(tickcolor = "#FEFBE8",
+               gridcolor = "rgba(254, 251, 232, 0.2)",
+               linecolor = "#FEFBE8"),
+  yaxis = list(tickcolor = "#FEFBE8",
+               gridcolor = "rgba(254, 251, 232, 0.2)",
+               linecolor = "#FEFBE8",
+               title = ~unique(Gene),
+               range = c(0,100)),
+  legend = list(
+    font = list(
+      family = "sans-serif",
+      size = 12,
+      color = "#FEFBE8"),
+    bgcolor = "#3A3A39",
+    bordercolor = "#3A3A39"
+  ),
+  font = list(color = '#FEFBE8')
+)
+
+p1 <- dat %>% 
+  do(p = plot_many(.)) %>%
+  subplot(nrows = NROW(.), shareX = F, shareY = T, titleX=F, titleY=T) 
+
+# sd2 <- SharedData$new(dat, group = "A")
+dat_haply <- unique(sd1$data()[c(1,2,3,6)])
+dat_haply$Call <- as.character(dat_haply$Call)
+dat_haply$Call[dat_haply$Call == "S"] <- 0
+dat_haply$Call[dat_haply$Call == "R"] <- 1
+dat_haply$Call[dat_haply$Call == "HR"] <- 2
+dat_haply$Call[is.na(dat_haply$Call)] <- -1
+dat_haply$Call <- as.numeric(dat_haply$Call)
+
+# # presever order, will use something like this to have all the plots in same arrangement, or can jsut make them factors like i think i did before.
+# col_ord <- unique(dat_haply$Gene)
+
+dat_haply$Gene <- paste(dat_haply$Gene, dat_haply$Drug, sep = '.')
+
+
+dat_haply <- dat_haply[-c(3)] %>% 
+  spread(Gene, Call, fill = -1) %>% 
+  data.frame()
+
+rownames(dat_haply) <- dat_haply$SampleID
+drugs <- gsub(".*\\.", "", colnames(dat_haply)[-c(1)])
+colnames(dat_haply)[-c(1)] <- gsub("\\..*", "", colnames(dat_haply)[-c(1)])
+
+
+p3_2old <- dat_haply[-c(1)] %>%
+  heatmaply(Rowv = T, Colv = F, dendrogram = "row", #colors = cols_pltly[c(6,5,4,1,2,3)],
+            heatmap_layers = theme(axis.text.x = element_text(colour="#FEFBE8"),
+                                   axis.text.y = element_text(colour="#FEFBE8")),
+            col_side_colors = drugs, hide_colorbar = T) %>% #col = c("White", "Green","Maroon", "Red")
+  layout(plot_bgcolor="#3A3A39",
+         paper_bgcolor ="#3A3A39",
+         xaxis = list(tickcolor = "#FEFBE8",
+                      gridcolor = "rgba(254, 251, 232, 0.2)",
+                      linecolor = "#FEFBE8"),
+         yaxis = list(tickcolor = "#FEFBE8",
+                      gridcolor = "rgba(254, 251, 232, 0.2)",
+                      linecolor = "#FEFBE8"),
+         legend = list(
+           font = list(
+             family = "sans-serif",
+             size = 12,
+             color = "#FEFBE8"),
+           bgcolor = "#3A3A39",
+           bordercolor = "#3A3A39"
+         ),
+         font = list(color = '#FEFBE8')
+  )
+
+
+dat_haply <- tibble::tribble(
+  ~SampleID, ~a, ~b, ~c, ~d, ~e, ~f, ~g, ~h, ~i, ~j, ~k, ~l, ~m,
+       "S1",  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+       "S2",  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+       "S3", -1, -1,  1,  1, -1, -1, -1,  0,  1,  1,  1,  1,  1,
+       "S4",  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+       "S5",  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+       "S6", -1, -1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1
+  )
+
+
+
+# long_data = Data in long format. Replaces x, so both should not be used. Colnames must be c("name", "variable", "value"). If you do not have a names column you can simply use a sequence of numbers from 1 to the number of "rows" in the data.
+
+drugs <- c("BDQ", "INH", "INH", "BDQ", "RIF", "BDQ", "BDQ", "BDQ", "BDQ", "BDQ", "INH", "INH", "INH")
+
+p3_2 <- dat_haply[-c(1)] %>%
+  heatmaply(Rowv = T, Colv = F, dendrogram = "row", #colors = cols_pltly[c(6,5,4,1,2,3)],
+            labCol = c("atpE | g341t | L123P", "inhA | g341t | L123P", "katG | g341t | L123P", "pepQ | g341t | L123P", "rpoB | g341t | L123P", "Rv0678 | g341t | L123P", "Rv0678 | g331t | L123P", "atpE | g341t | L123P", "pepQ | g331t | L123P", "pepQ | g341t | L153P", "katG | g3451t | L123P", "katG | g341t | L123P", "katG | g341t | L153P"),
+            labRow = dat_haply$SampleID,
+
+            heatmap_layers = theme(axis.text.x = element_text(colour="#FEFBE8"),
+                                   axis.text.y = element_text(colour="#FEFBE8")),
+            col_side_colors = drugs, hide_colorbar = T) %>% #col = c("White", "Green","Maroon", "Red")
+  layout(plot_bgcolor="#3A3A39",
+         paper_bgcolor ="#3A3A39",
+         xaxis = list(tickcolor = "#FEFBE8",
+                      gridcolor = "rgba(254, 251, 232, 0.2)",
+                      linecolor = "#FEFBE8"),
+         yaxis = list(tickcolor = "#FEFBE8",
+                      gridcolor = "rgba(254, 251, 232, 0.2)",
+                      linecolor = "#FEFBE8"),
+         legend = list(
+           font = list(
+             family = "sans-serif",
+             size = 12,
+             color = "#FEFBE8"),
+           bgcolor = "#3A3A39",
+           bordercolor = "#3A3A39"
+         ),
+         font = list(color = '#FEFBE8')
+  )
+
+
+
+
+
+
+
+
+
+
+p3 <-ggplot(data = dat, 
+          mapping = aes(x = Gene,
+                        y = SampleID,
+                        fill = Call)) +
+  geom_tile() +
+  xlab(label = "Sample") +
+  facet_grid(~ Drug, switch = "x", scales = "free_x", space = "free_x") +
+  scale_fill_manual(values = cols_pltly) + 
+  theme(
+    panel.background = element_rect(fill = "#3A3A39"),
+    plot.background = element_rect(fill = "#3A3A39"),
+    legend.background = element_rect(fill = "#3A3A39"),
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.title = element_text(colour = "white"),
+    plot.title = element_text(colour = "light grey"),
+    legend.text = element_text(colour = "light grey"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text = element_text(colour ="light grey")
+  )
+
+
+
+
+
+# here i want to collapes so its just one call for each drug, resistant, sensitive, no call or hetero if no R
+dat$Call <- fct_expand(dat$Call, "NoCall")
+dat_sun <- dat %>%
+  dplyr::select(1,3,5,6) %>%
+  unique() %>% 
+  # mutate(Call = replace_na(as.character(Call), "NoCall")) %>% 
+  mutate(Call = replace_na(Call, "NoCall")) %>% 
+  group_by(SampleID, Drug) %>% 
+  summarise(Call_all = paste(unique(Call), collapse=", "),
+            Percentage_m = max(Percentage))
+
+# # this is gross
+dat_sun$color <- ifelse(str_detect(dat_sun$Call_all, "^R| R,"), "#FB4D3D",
+                           ifelse(str_detect(dat_sun$Call_all, "HR"), "#FB4D3D",
+                                  ifelse(str_detect(dat_sun$Call_all, "S"), "#9BE564", "#2A2B2E")))
+dat_sun$Call_all <- ifelse(str_detect(dat_sun$Call_all, "^R| R,"), "R",
+                           ifelse(str_detect(dat_sun$Call_all, "HR"), "R",
+                                  ifelse(str_detect(dat_sun$Call_all, "S"), "S", "I")))
+
+# dat_sun$color <- ifelse(str_detect(dat_sun$Call_all, "^R| R,"), saturation("#FB4D3D", dat_sun$Percentage_m),
+#                         ifelse(str_detect(dat_sun$Call_all, "HR"), saturation("#B24C63", dat_sun$Percentage_m),
+#                                ifelse(str_detect(dat_sun$Call_all, "S"), saturation("#9BE564", dat_sun$Percentage_m),
+#                                       "#2A2B2E")))
+dat_sun$rand <- 1
+
+#############
+colnames(dat_sun) <- c("name1", "name2", "name", "value", "color", "value2")
+
+
+
+
+
+# level 3
+# dat_sun <- dat_sun %>%
+#   nest(itemStyle = c(color))
+
+dat_sun$value <- dat_sun$value/100
+dat_sun <- dat_sun %>% 
+  nest(children = c(name, value, color))
+
+
+colnames(dat_sun) <- c("name", "name2", "value", "children")
+dat_sun <- dat_sun %>% 
+  nest(children = c(name, value, children))
+
+colnames(dat_sun) <- c("name", "children")
+
+# (b=dat_sun %>% 
+#   e_charts() %>% 
+#   e_sunburst())
+  # e_theme("westeros")
+# 
+
+# its neest to be llike this, but i cant remove back ticks, no ide how to get it like that, i tried making itemStyle a tibble with color beofre adding it to child but it didnt work
+# $series[[1]]$data[[1]]$children[[1]]$children[[1]]$itemStyle
+# $series[[1]]$data[[1]]$children[[1]]$children[[1]]$itemStyle$color
+
+# b$x$opts$series
+
+# with styles
+myStyles <- c(list(color='#B24C63'), list(color='#9BE564'), list(color='#2A2B2E'))
+myNames  <- c(list(color='R'), list(color='S'), list(color='I'))
+myLevels <- list(c(3))
+
+p2 <- dat_sun %>% 
+  e_charts() %>% 
+  e_sunburst(myStyles, myNames, myLevels) 
+
+
+
+# here i want to collapes so its just one call for each drug, resistant, sensitive, no call or hetero if no R
+# dat$Call <- fct_expand(dat$Call, "NoCall")
+# dat_sun <- dat %>%
+#   dplyr::select(1,3,5,6) %>%
+#   unique() %>% 
+#   # mutate(Call = replace_na(as.character(Call), "NoCall")) %>% 
+#   mutate(Call = replace_na(Call, "NoCall")) %>% 
+#   group_by(SampleID, Drug) %>% 
+#   summarise(Call_all = paste(Call, collapse=", "),
+#             Percentage_m = max(Percentage))
+# 
+# # # this is gross
+# # dat_sun$color <- ifelse(str_detect(dat_sun$Call_all, "^R| R,"), "#FB4D3D",
+# #                            ifelse(str_detect(dat_sun$Call_all, "HR"), "#B24C63",
+# #                                   ifelse(str_detect(dat_sun$Call_all, "S"), "#9BE564", "#2A2B2E")))
+# dat_sun$color <- ifelse(str_detect(dat_sun$Call_all, "^R| R,"), saturation("#FB4D3D", dat_sun$Percentage_m),
+#                         ifelse(str_detect(dat_sun$Call_all, "HR"), saturation("#B24C63", dat_sun$Percentage_m),
+#                                ifelse(str_detect(dat_sun$Call_all, "S"), saturation("#9BE564", dat_sun$Percentage_m),
+#                                       "#2A2B2E")))
+# dat_sun$rand <- 1
+# colnames(dat_sun) <- c("name", "name2", "resist", "freq", "color", "value")
+# 
+# dat_sun <- dat_sun %>% 
+#   nest(children = c(name, value, color))
+# colnames(dat_sun)[1] <- c("name")
+# p2 <- dat_sun %>% 
+#   e_charts() %>%
+#   e_sunburst()
+
+
+# 
+# dat_sun %>%
+#   as_tibble() %>% 
+#   tidyr::nest(color, .key = "style") %>% # nest
+#   e_charts() %>%
+#   e_sunburst(Drug, SampleID, rand, style) %>%
+#   e_tooltip(trigger = "item")
+# # %>%
+# #   e_tooltip(formatter = htmlwidgets::JS("
+# #               function(params){
+# #                 return('<strong>' + params.name + 
+# #                        '</strong><br />Max %: ' + params.value[2]) 
+# #                         }
+# #                   "))
+# 
+
+
+  
+
+```
+
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### 
+
+```{r}
+# This heatmap must have
+# Rows as samples
+# columns as genes with second annotation line for Drugs
+# Hover text shoudl be R/HR/S call and positions
+# Values should be percentage resistant
+
+p3
+```
+
+
+### 
+
+<!-- This shoud have three layers but I cant seem to get that working -->
+<!-- (Drug, Gene, Sample) -->
+<!-- I also need to make the colors correct -->
+this should have the color shades scaled by the freq, but cant get it working
+```{r}
+
+p2
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### 
+
+```{r}
+p1
+
+```
+
+
+Multi Sample Heatmap
+===================================== 
+```{r}
+p3_2
+
+```
+
+
+
+Single Sample
+===================================== 
+
+<!-- Column {data-width=200} -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{r}
+sd4 <- SharedData$new(dat, group = "B")
+
+m <- list(
+  l = 10,
+  r = 10,
+  b = 150,
+  t = 10,
+  pad = 4
+)
+
+filter_select('SampleID', 'Sample ID', sd4, ~SampleID, multiple = F) #, selected = sd4$data()[1, "SampleID"]
+# sd4$data()
+sd4 %>%
+  plot_ly(x = ~paste(Drug, Gene), y = ~Percentage, type = 'bar', color = ~Mutation, name = ~paste(Gene, Mutation),
+          text = ~Percentage, textposition = 'auto') %>%
+  layout(autosize = T, margin = m, xaxis = list(
+      title = " "
+    )) %>% 
+  # add_annotations(
+  #   text = ~SampleID,
+  #   x = 0.5,
+  #   y = 1.05,
+  #   yref = "paper",
+  #   xref = "paper",
+  #   xanchor = "middle",
+  #   yanchor = "top",
+  #   showarrow = FALSE,
+  #   font = list(size = 15)
+  # ) %>% 
+  layout(barmode = "stack") %>% #, autosize = T, margin = m) 
+  # layout(legend = list(orientation = 'h')) %>%
+  layout(showlegend = FALSE) %>% 
+  layout(
+  plot_bgcolor="#3A3A39",
+  paper_bgcolor ="#3A3A39",
+  xaxis = list(tickcolor = "#FEFBE8",
+               gridcolor = "rgba(254, 251, 232, 0.2)",
+               linecolor = "#FEFBE8"),
+  yaxis = list(tickcolor = "#FEFBE8",
+               gridcolor = "rgba(254, 251, 232, 0.2)",
+               linecolor = "#FEFBE8"),
+  legend = list(
+    font = list(
+      family = "sans-serif",
+      size = 12,
+      color = "#FEFBE8"),
+    bgcolor = "#3A3A39",
+    bordercolor = "#3A3A39"
+  ),
+  font = list(color = '#FEFBE8')
+)
+
+# p6 <- allPs[[as.numeric(sd3$key())[1]]]
+
+
+# p6
+
+```
+
+
+
+
+
+
+
+<script>
+$(document).ready(function() {
+  $('#dashboard-container').on('flexdashboard:layoutcomplete', function() {
+    $('#navbar a').click(function() { 
+      if ($(this).hasClass('citation'))
+        $('#modal_markdown').modal(); });
+  })
+})
+</script>
+
+<!-- if ($(this).hasClass('fa fa-file-signature')) -->
+
+
+
+
+
+<a class="citation">Cite</a>
+===================================== 
+
+```{r}
+cite <- paste0("Limberis, JD. et al 2021.", "[Online]. Available at: ", "gitrepo?", "(Accessed: ", Sys.Date(), ")")
+
+bs_modal(
+  id = "modal_markdown",
+  title = "Cite",
+  body = cite
+)
+```
+
+
+
+
+
+<!-- ## Graveyard ## -->

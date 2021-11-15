@@ -56,15 +56,14 @@ vcf_t <- vcf_t %>%
          AD3p = round(AD3/DP*100, 2))
 
 
-
-# making it so the indels are seperated, at the bottom of the plot
-vcf_t <- vcf_t %>% 
-  mutate(ADrefp = ifelse(INDEL, ADrefp*-1, ADrefp),
-         AD1p = ifelse(INDEL, AD1p*-1, AD1p),
-         AD2p = ifelse(INDEL, AD2p*-1, AD2p),
-         AD3p = ifelse(INDEL, AD3p*-1, AD3p))
-
-
+# 
+# # making it so the indels are seperated, at the bottom of the plot
+# vcf_t <- vcf_t %>% 
+#   mutate(ADrefp = ifelse(INDEL, ADrefp*-1, ADrefp),
+#          AD1p = ifelse(INDEL, AD1p*-1, AD1p),
+#          AD2p = ifelse(INDEL, AD2p*-1, AD2p),
+#          AD3p = ifelse(INDEL, AD3p*-1, AD3p))
+# )
 
 
 # this is a bullshit way to do things! Fix it.
@@ -82,6 +81,17 @@ vcf_t <- vcf_t %>%
                                ifelse(Depth == "ALT2", AD2p,
                                       AD3p
                                ))))
+
+
+# if theres an indel, then this breaks, I'm sleepy so fix properly later
+vcf_t <- vcf_t %>%
+  group_by(Indiv, CHROM, POS, Call) %>% 
+  summarize(Depth = mean(Depth))
+
+
+
+
+
 
 varplots <- list()
 count <- 1

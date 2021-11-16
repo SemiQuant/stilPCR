@@ -1,11 +1,11 @@
 # stilPCR
 
 In DEV.
-Analysis of Illumina amplicon sequencing. The program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and call variants.
+Analysis of Illumina amplicon sequencing. The program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and call variants. Outputs will be in the cwd.
 
 ## process.sh
 ### Process fastq and create plots/ call variants
-bash process.sh "Sample Name (excluding the RX_001.fastq.gz)" "path to reference fasta" "primer bed file (optional for primer trimming; requires samtools >=1.4)" "threads, default = 1"
+bash process.sh "Sample Name (excluding the RX_001.fastq.gz)" "path to reference fasta" "primer bed file (optional for primer trimming; requires samtools >=1.4)" "threads, default = 1" "path to script (this) directory"
 
 ## variantAnalysis.R
 ### Create plots of variants

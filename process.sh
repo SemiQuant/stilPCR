@@ -2,6 +2,9 @@ sample="$1"
 ref="$2"
 primers="$3" # requires samtools >=1.4
 threads=${4:-1}
+# Get script dir, posix version
+a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; sdir=$(cd $a; pwd)
+script_path="${5:-$sdir}"
 R1="${sample}_R1_001.fastq.gz"
 R2="${sample}_R2_001.fastq.gz"
 
@@ -24,7 +27,7 @@ samtools flagstat "$bam" > "${sample}.flagstat.txt"
 bedtools genomecov -dz -ibam "$bam" > "${sample}.depth.tsv"
 
 samtools view -F 4 "$bam" | gawk '{ if ( and($2, 16) == 0 ) { strand="+" } else { strand="-" }; print $3 "\t" $4 "\t" $4 + length($10) "\t"  strand }' > "${sample}.counts.tsv"
-Rscript "stillPCR_plots.R" "${PWD}/${sample}.counts.tsv" "${PWD}/${sample}.depth.tsv"
+Rscript "${script_path}/stillPCR_plots.R" "${PWD}/${sample}.counts.tsv" "${PWD}/${sample}.depth.tsv"
 
 
 
@@ -48,4 +51,4 @@ bcftools mpileup --fasta-ref "$ref" --max-depth 999999999 \
   --keep-alts > "${sample}.vcf"
   
   
-Rscript "variantAnalysis.R" "${PWD}/${sample}.vcf" "$ref"
+Rscript "${script_path}/variantAnalysis.R" "${PWD}/${sample}.vcf" "$ref"

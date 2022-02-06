@@ -7,8 +7,9 @@ a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; sdir=$(cd $a; pwd)
 script_path="${5:-$sdir}"
 R1="${sample}_R1_001.fastq.gz"
 R2="${sample}_R2_001.fastq.gz"
+TRIM="${script_path}/Trimmomatic-0.39/trimmomatic-0.39.jar"
 
-java -jar "${script_path}/Trimmomatic-0.39/trimmomatic-0.39.jar" PE \
+java -jar "$TRIM" PE \
   "$R1" "$R2" \
   "${R1/_R1_001.fastq.gz/_R1_001.trimmed.fastq.gz}" "${R1/_R1_001.fastq.gz/_R1_001.trimmedUmpaired.fastq.gz}" \
   "${R2/_R2_001.fastq.gz/_R2_001.trimmed.fastq.gz}" "${R2/_R2_001.fastq.gz/_R2_001.trimmedUmpaired.fastq.gz}" 

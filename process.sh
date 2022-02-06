@@ -8,9 +8,18 @@ script_path="${5:-$sdir}"
 R1="${sample}_R1_001.fastq.gz"
 R2="${sample}_R2_001.fastq.gz"
 
+java -jar "${script_path}/Trimmomatic-0.39/trimmomatic-0.39.jar" PE \
+  "$R1" "$R2" \
+  "${R1/_R1_001.fastq.gz/_R1_001.trimmed.fastq.gz}" "${R1/_R1_001.fastq.gz/_R1_001.trimmedUmpaired.fastq.gz}" \
+  "${R2/_R2_001.fastq.gz/_R2_001.trimmed.fastq.gz}" "${R2/_R2_001.fastq.gz/_R2_001.trimmedUmpaired.fastq.gz}" 
+
+
+R1="${R1/_R1_001.fastq.gz/_R1_001.trimmed.fastq.gz}"
+R2="${R2/_R2_001.fastq.gz/_R2_001.trimmed.fastq.gz}"
+
 bam="${sample}.bam"
 
-bwa mem "$ref" "$R1" "$R2" > "${sample}.sam"
+bwa mem -t $threads "$ref" "$R1" "$R2" > "${sample}.sam"
 samtools view -bS "${sample}.sam" | samtools sort - > "$bam"
 
 
@@ -33,7 +42,6 @@ Rscript "${script_path}/stillPCR_plots.R" "${PWD}/${sample}.counts.tsv" "${PWD}/
 
 # samtools ampliconstats -@ $threads "$primers" "${sample}_clipped.bam" -o "${sample}_astats.txt"
 # plot-ampliconstats -size 1200,900 mydata "${sample}_astats.txt"
-
 
 bcftools mpileup --fasta-ref "$ref" --max-depth 999999999 \
   --ignore-RG \

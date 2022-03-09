@@ -1,7 +1,6 @@
 require(vcfR)
 require(tidyverse)
 require(plotly)
-require(plotly)
 require(htmlwidgets)
 args = commandArgs(trailingOnly=TRUE)
 vcf_file <- args[1]

@@ -1,6 +1,6 @@
 #!/bin/bash
 sudo apt-get install -y samtools bcftools bwa bedtools r-base
-Rscript -e 'install.packages(c("tidyverse", "ggplot2", "cowplot", "plotly", "htmlwidgets", "vcf"), repos="https://cloud.r-project.org")'
+Rscript -e 'install.packages(c("tidyverse", "ggplot2", "cowplot", "plotly", "htmlwidgets", "vcfR"), repos="https://cloud.r-project.org")'
 
 # Get script dir, posix version
 a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; sdir=$(cd $a; pwd)

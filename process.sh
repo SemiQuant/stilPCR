@@ -10,6 +10,8 @@ script_path="${5:-$sdir}"
 R1="$6"
 R2="$7"
 
+
+
 cd "$8"
 
 TRIM="${script_path}/Trimmomatic-0.39/trimmomatic-0.39.jar"

@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --script-path)
-            script_path="2"
+            script_path="$2"
             shift
             shift
             ;;

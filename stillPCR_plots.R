@@ -6,7 +6,7 @@ f_in <- args[1]
 name <- gsub(".counts.tsv", "", basename(f_in))
 
 
-filter_thresh <- 1000
+filter_thresh <- 200
 require(tidyverse)
 require(ggplot2)
 require(cowplot)
@@ -15,13 +15,16 @@ require(htmlwidgets)
 dat <- read_tsv(f_in, col_names = F)
 
 
-dat$count <- 1
 
-dat <- dat %>% 
-  # select(-X1) %>% 
-  group_by_all() %>% 
-  summarise(count = sum(count)) %>% 
-  filter(count > filter_thresh) %>% 
+# colnames(dat) <- c("Gene", "Start", "End", "Count", "Strand")
+
+
+dat$count <- 1
+dat <- dat %>%
+  # select(-X1) %>%
+  group_by_all() %>%
+  summarise(count = sum(count)) %>%
+  filter(count > filter_thresh) %>%
   ungroup()
 
 
@@ -31,13 +34,14 @@ write.table(file = paste0(name, "summarized_counts.tsv"), x = dat, sep = "\t", c
 
 
 
-round_any = function(x, accuracy, f=round){f(x/ accuracy) * accuracy}
+round_any <- function(x, accuracy, f=round){f(x/ accuracy) * accuracy}
 dat$Start <- round_any(dat$Start, 10, f = floor)
 dat$End <- round_any(dat$End, 10, f = floor)
-dat <- dat %>% 
-  group_by(Gene, Start, End, Strand) %>% 
-  summarise(Count = sum(Count)) %>% 
+dat <- dat %>%
+  group_by(Gene, Start, End, Strand) %>%
+  summarise(Count = sum(Count)) %>%
   filter(Count >= filter_thresh)
+
 
 
 plots <- list()
@@ -61,7 +65,29 @@ dpth_plt <- read_tsv(args[2], col_names = F) %>%
   plot_ly(x = ~X2, y=~X3, color = ~X1) %>% 
   layout(xaxis = list(title = "Postion"),
          yaxis = list(title = "Depth"),
-         title = name)
+         title = name) %>% 
+  layout(
+    images = list(
+      list(source = "https://i.imgur.com/T6F8rf3.png",
+           xref = "paper",
+           yref = "paper",
+           x= 0.08,
+           y= 1,
+           sizex = 0.2,
+           sizey = 0.2,
+           opacity = 0.8
+      ),
+      list(source = "https://i.imgur.com/T2hvZ1f.png",
+           xref = "paper",
+           yref = "paper",
+           x= 1.05,
+           y= 0.1,
+           sizex = 0.1,
+           sizey = 0.1,
+           opacity = 1
+      )
+    ))
+
 try({
   saveWidget(as_widget(dpth_plt), paste0(name, "_cov.html"), selfcontained = T)
 })

@@ -135,8 +135,7 @@ bcftools mpileup --fasta-ref "$ref" \
   --max-idepth 99999999 \
   --ignore-RG \
   --min-BQ 30 \
-  --threads $threads \
-  --skip-any-set "UNMAP,SECONDARY,QCFAIL" \
+  --threads $threads \   # --skip-any-set "UNMAP,SECONDARY,QCFAIL" \
   -Ou \
   --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR \
   "$bam" |

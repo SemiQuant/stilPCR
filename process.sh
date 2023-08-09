@@ -122,7 +122,6 @@ bedtools genomecov -dz -ibam "$bam" > "${sample}.depth.tsv"
 
 # samtools view -F 4 "$bam" | gawk '{ if ( and($2, 16) == 0 ) { strand="+" } else { strand="-" }; print $3 "\t" $4 "\t" $4 + length($10) "\t"  strand }' > "${sample}.counts.tsv"
 
-
 # bedtools genomecov -bg -strand + -ibam "$bam" | awk 'BEGIN{FS=OFS="\t+"}{print $0 OFS }' > "${sample}.counts.tsv"
 # samtools view -b -F 4 -f 16 "$bam" | bedtools genomecov -bg -ibam - | awk 'BEGIN{FS=OFS="\t-"}{print $0 OFS }' > "${sample}.counts.tsv"
 # samtools view -b -F 4 -f 32 "$bam" | bedtools genomecov -bg -ibam - | awk 'BEGIN{FS=OFS="\t+"}{print $0 OFS }' >> "${sample}.counts.tsv"
@@ -140,7 +139,7 @@ bcftools mpileup --fasta-ref "$ref" \
   --max-idepth 99999999 \
   --ignore-RG \
   --min-BQ 30 \
-  --threads $threads \   # --skip-any-set "UNMAP,SECONDARY,QCFAIL" \
+  --threads $threads \
   -Ou \
   --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR \
   "$bam" |
@@ -150,7 +149,6 @@ bcftools mpileup --fasta-ref "$ref" \
   --prior 0 \
   --keep-alts > "${sample}.vcf"
   #--variants-only
-
 
 Rscript "${script_path}/variantAnalysis.R" "${PWD}/${sample}.vcf" "$ref"
 

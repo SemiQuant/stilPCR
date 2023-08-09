@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --threads)
-            threads="${2:-1}"
+            threads="${2:-4}"
             shift
             shift
             ;;
@@ -105,9 +105,12 @@ samtools view -bS "${sample}.sam" | samtools sort - > "$bam"
 
 if [ ! -z "$primers" ]
 then
-  samtools ampliconclip --tolerance 8 -u --rejects-file "${sample}_NOclipped.bam" -b "$primers" --hard-clip "$bam" | samtools fixmate -@ $threads -O bam - "${sample}_clipped.tmp.bam"
+  samtools ampliconclip --tolerance 8 -u --rejects-file "${sample}_NOclipped.bam" -b "$primers" --hard-clip "$bam" > "${sample}.tmp.bam"
+  samtools sort -n "${sample}.tmp.bam" > "${sample}.tmp.sorted.bam"
+  samtools fixmate -@ $threads -O bam "${sample}.tmp.sorted.bam" > "${sample}_clipped.tmp.bam"
   samtools sort -@ $threads "${sample}_clipped.tmp.bam" -o "${sample}_clipped.bam"
   bam="${sample}_clipped.bam"
+  rm "${sample}.tmp.bam" "${sample}.tmp.sorted.bam"
 fi
 
 samtools index "$bam"

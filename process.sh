@@ -110,8 +110,8 @@ then
   # samtools fixmate -@ $threads -r -O bam "${sample}.tmp.sorted.bam" > "${sample}_clipped.tmp.bam"
   # samtools sort -@ $threads "${sample}_clipped.tmp.bam" -o "${sample}_clipped.bam"
   samtools sort -@ $threads "${sample}.tmp.sorted.bam" -o "${sample}_clipped.bam"
+  rm "${sample}.tmp.bam" "${sample}.tmp.sorted.bam" "${sample}_clipped.tmp.bam" "$bam"
   bam="${sample}_clipped.bam"
-  rm "${sample}.tmp.bam" "${sample}.tmp.sorted.bam" "${sample}_clipped.tmp.bam"
 fi
 
 

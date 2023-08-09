@@ -100,18 +100,20 @@ java -jar "$TRIM" PE \
 bam="${sample}.bam"
 
 bwa mem -t $threads "$ref" "$R1_trim" "$R2_trim" > "${sample}.sam"
-samtools view -bS "${sample}.sam" | samtools sort - > "$bam"
+samtools view -bS "${sample}.sam" | samtools sort -@ $threads - > "$bam"
 
 
 if [ ! -z "$primers" ]
 then
-  samtools ampliconclip --tolerance 8 -u --rejects-file "${sample}_NOclipped.bam" -b "$primers" --hard-clip "$bam" > "${sample}.tmp.bam"
-  samtools sort -n "${sample}.tmp.bam" > "${sample}.tmp.sorted.bam"
-  samtools fixmate -@ $threads -O bam "${sample}.tmp.sorted.bam" > "${sample}_clipped.tmp.bam"
-  samtools sort -@ $threads "${sample}_clipped.tmp.bam" -o "${sample}_clipped.bam"
+  samtools ampliconclip --tolerance 8 -u --rejects-file "${sample}_NOclipped.bam" -b "$primers" --hard-clip "$bam" -o "${sample}.tmp.bam"
+  samtools sort -@ $threads -n "${sample}.tmp.bam" -o "${sample}.tmp.sorted.bam"
+  # samtools fixmate -@ $threads -r -O bam "${sample}.tmp.sorted.bam" > "${sample}_clipped.tmp.bam"
+  # samtools sort -@ $threads "${sample}_clipped.tmp.bam" -o "${sample}_clipped.bam"
+  samtools sort -@ $threads "${sample}.tmp.sorted.bam" -o "${sample}_clipped.bam"
   bam="${sample}_clipped.bam"
-  rm "${sample}.tmp.bam" "${sample}.tmp.sorted.bam"
+  rm "${sample}.tmp.bam" "${sample}.tmp.sorted.bam" "${sample}_clipped.tmp.bam"
 fi
+
 
 samtools index "$bam"
 samtools flagstat "$bam" > "${sample}.flagstat.txt"

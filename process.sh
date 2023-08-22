@@ -47,6 +47,11 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        --adj)
+            adj="$2"
+            shift
+            shift
+            ;;
         *)    # unknown option
             echo "Unknown option: $1"
             exit 1
@@ -95,7 +100,7 @@ java -jar "$TRIM" PE \
   "$R1" "$R2" \
   "$R1_trim" "${R1%.fastq.gz}.trimmedUmpaired.fastq.gz" \
   "$R2_trim" "${R2%.fastq.gz}.trimmedUmpaired.fastq.gz" \
-  ILLUMINACLIP:"${script_path}/Trimmomatic-0.39/adapters/TruSeq3-PE.fa":2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36
+  ILLUMINACLIP:"${script_path}/Trimmomatic-0.39/adapters/TruSeq3-PE.fa":2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:70
 
 bam="${sample}.bam"
 
@@ -117,6 +122,7 @@ fi
 
 samtools index "$bam"
 samtools flagstat "$bam" > "${sample}.flagstat.txt"
+# mapped_percentage=$(awk 'NF && /mapped/ {match($0, /\([0-9]+\.[0-9]+/); print substr($0, RSTART+1, RLENGTH-1); exit}' "${sample}.flagstat.txt")
 # samtools depth -a "${sample}.bam" -o "${sample}.depth.tsv"
 bedtools genomecov -dz -ibam "$bam" > "${sample}.depth.tsv"
 
@@ -149,6 +155,11 @@ bcftools mpileup --fasta-ref "$ref" \
   --prior 0 \
   --keep-alts > "${sample}.vcf"
   #--variants-only
+
+if [ ! -z "$adj" ]
+then
+    python "${script_path}/adjustments.py" "${out_dir}/${sample}.vcf" "${script_path}/refs/${adj}"
+fi
 
 Rscript "${script_path}/variantAnalysis.R" "${PWD}/${sample}.vcf" "$ref"
 

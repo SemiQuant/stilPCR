@@ -26,11 +26,12 @@ Analysis of Illumina amplicon sequencing. The program will trim off the primer s
 | -p\|--primers     | path to file containin primer sequences (optinal but recommended, requires samtools ≥v1.4) |
 | -d\|--script_dir  | path to script dir (def = posix calculated)                       |
 | -o\|--out_dir     | path to output dir (def = cwd)                                    |
+| -a\|--adj         | path to bed file of reference positions to adjust                 |
 
 
 #### Primers bed file
 This file is highly recommended as otherwise primers will be used to call variants (or the lack of variants)
-The file must contain thee columns, in the first, the chromosome name matching the name in the reference fasta file, second, the start of where this primer binds to the reference sequence, and third, when the binding ends.
+The file must contain three columns, in the first, the chromosome name matching the name in the reference fasta file, second, the start of where this primer binds to the reference sequence, and third, when the binding ends.
 for example
 
 >$cat primers.bed
@@ -39,6 +40,9 @@ for example
 Rv0678	0	20
 Rv0678	421	441
 ```
+
+#### Variant adjustment bed file
+The file must contain three columns, in the first, the chromosome name matching the name in the reference fasta file, second, the gene start (this value can be negative if the primers target a portion withing the gene) and third, when the gene ends.
 
 
 ## Required software

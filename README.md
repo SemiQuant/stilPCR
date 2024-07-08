@@ -1,7 +1,7 @@
 # stilPCR
 
 <!-- <div>
-    <img src="https://github.com/SemiQuant/stilPCR/blob/main/sq.png" width="30%" height="30%">
+    <img src="https://raw.githubusercontent.com/SemiQuant/stilPCR/main/sq.png" width="30%" height="30%">
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/drdx.png" width="30%" height="30%">
     <p>Analysis primer design and analysis for hissPCR (link to protocols.io)</p>
 </div>

@@ -1,13 +1,7 @@
 # stilPCR
 
-<style>
-    .image-spacing {
-        margin-right: 2000px;
-    }
-</style>
-
 <div>
-    <img src="https://github.com/SemiQuant/stilPCR/blob/main/sq.png" width="10%" height="10%">
+    <img src="https://github.com/SemiQuant/stilPCR/blob/main/sq.png" width="10%" height="10%">"          "
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/drdx.png" width="30%" height="30%">
     <p>Analysis primer design and analysis for hissPCR (link to protocols.io)</p>
 </div>

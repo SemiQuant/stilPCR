@@ -2,6 +2,7 @@
 
 <div>
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/sq.png" width="10%" height="10%">
+    <br><br>
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/drdx.png" width="30%" height="30%">
     <p>Analysis primer design and analysis for hissPCR (link to protocols.io)</p>
 </div>

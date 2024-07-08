@@ -3,7 +3,7 @@
 <div>
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/sq.png" width="10%" height="10%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/drdx.png" width="30%" height="30%">
-    <p>Analysis primer design and analysis for hissPCR (link to protocols.io)</p>
+    <p>Analysis primer design and analysis for hissPCR (link to protocols.io)[www.protocols.io]</p>
 </div>
 
 Analysis of Illumina amplicon sequencing. The program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and calls variants. Outputs will be in the cwd.

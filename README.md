@@ -6,7 +6,7 @@
     <p>Analysis primer design and analysis for hissPCR (link to protocols.io)</p>
 </div>
  -->
-
+![drdx](drdx.png)
 Analysis of Illumina amplicon sequencing. The program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and calls variants. Outputs will be in the cwd.
 
 >bash stilPCR.sh \

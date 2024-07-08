@@ -1,4 +1,4 @@
-# stilPCR
+# stilPCR increases the effective sequencing length of Illumina targeted next-generation sequencing
 
 <div>
     <img src="https://github.com/SemiQuant/stilPCR/blob/main/sq.png" width="10%" height="10%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -17,14 +17,14 @@ Analysis of Illumina amplicon sequencing. The program will trim off the primer s
 
 | Flag              | Description                                                       |
 |-------------------|-------------------------------------------------------------------|
-| -t\|--threads     | number of threads (def = 1)                                       |
-| -n\|--sample_name | sample name (def = ${R1/R1*/})                                    |
+| -t\|--threads     | number of threads (default = 1)                                       |
+| -n\|--sample_name | sample name (default = ${R1/R1*/})                                    |
 | -1\|--R1          | path to read 1 (required)                                         |
 | -2\|--R2          | path to read 2 (required)                                         |
 | -f\|--ref         | path to reference fasta (required)                                |
-| -p\|--primers     | path to file containin primer sequences (optinal but recommended, requires samtools ≥v1.4) |
-| -d\|--script_dir  | path to script dir (def = posix calculated)                       |
-| -o\|--out_dir     | path to output dir (def = cwd)                                    |
+| -p\|--primers     | path to file containing primer sequences (optional but recommended, requires samtools ≥v1.4) |
+| -d\|--script_dir  | path to script dir (default = posix calculated)                       |
+| -o\|--out_dir     | path to output dir (default = cwd)                                    |
 | -a\|--adj         | path to bed file of reference positions to adjust                 |
 
 

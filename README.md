@@ -8,12 +8,13 @@
 
 Analysis of Illumina amplicon sequencing. The program will trim off the primer sequences (so they do not interfere with variant calling), produce numerous plots of the data, and calls variants. Outputs will be in the cwd.
 
->bash stilPCR.sh \
->  --R1 "test_data/read_R1_001.fastq.gz" \
->  --R2 "test_data/read_R2_001.fastq.gz" \
->  --ref "refs/BDQ_duplex.fasta" \
->  --primers "refs/primers.bed"
-
+```
+bash stilPCR.sh \
+  --R1 "test_data/read_R1_001.fastq.gz" \
+  --R2 "test_data/read_R2_001.fastq.gz" \
+  --ref "refs/BDQ_duplex.fasta" \
+  --primers "refs/primers.bed"
+```
 
 | Flag              | Description                                                       |
 |-------------------|-------------------------------------------------------------------|
